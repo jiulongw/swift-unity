@@ -1,0 +1,12 @@
+#include "Exports.xcconfig"
+
+UNITY_SCRIPTING_BACKEND = il2cpp;
+GCC_PREFIX_HEADER = DemoApp/Unity/Classes/Prefix.pch;
+
+OTHER_LDFLAGS = -weak-lSystem -weak_framework CoreMotion -weak_framework GameKit -weak_framework iAd -framework CoreGraphics -framework AVFoundation -framework CoreVideo -framework CoreMedia -framework SystemConfiguration -framework CoreLocation -framework MediaPlayer -framework CFNetwork -framework AudioToolbox -framework OpenAL -framework QuartzCore -framework OpenGLES -framework UIKit -framework Foundation -framework MediaToolbox -framework Metal -liconv.2 -liPhone-lib -lil2cpp;
+
+HEADER_SEARCH_PATHS = "DemoApp/Unity/Classes" "DemoApp/Unity/Classes/Unity" "DemoApp/Unity/Classes/Native" "DemoApp/Unity/Libraries" "DemoApp/Unity/Libraries/libil2cpp/include";
+LIBRARY_SEARCH_PATHS = "DemoApp/Unity/Libraries" "DemoApp/Unity/Libraries/libil2cpp/include";
+
+// If using .net 4.0 in Unity, append -DNET_4_0 to OTHER_CFLAGS
+OTHER_CFLAGS = $(inherited) -DINIT_SCRIPTING_BACKEND=1 -fno-strict-overflow -DRUNTIME_IL2CPP=1;
