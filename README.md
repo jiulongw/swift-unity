@@ -97,7 +97,7 @@ These files are added to source control and skipped by script that copies update
 ### Setup UnityAppController
 
 Since we renamed `main` entry in main.mm, UntiyAppController needs to be setup properly to handle app events.
-Sample code can be found in `AppDelegate.swift`.
+Sample code can be found in [AppDelegate.swift][4].
 
 Note in order to call Objective-C method from Swift code, a [bridging header file][3] needs to be configured in Xcode.
 
@@ -157,3 +157,4 @@ script on Unity side to programmatically add files to Xcode build target.
 [1]: https://github.com/blitzagency/ios-unity5
 [2]: http://www.the-nerd.be/2015/08/20/a-better-way-to-integrate-unity3d-within-a-native-ios-application/
 [3]: https://developer.apple.com/library/content/documentation/Swift/Conceptual/BuildingCocoaApps/MixandMatch.html
+[4]: https://github.com/jiulongw/swift-unity/blob/master/demo/xcode/DemoApp/AppDelegate.swift
