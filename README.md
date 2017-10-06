@@ -16,8 +16,8 @@ these updates.
 3. Open Swift Xcode project and build.
 4. Update Unity / Swift code. Everytime Unity project is built, Xcode gets updates.
 
-*Note*: First time build the Unity demo project will change Xcode project file a lot. It is safe to commit the change
-into source control as it only performs necessary updates going forward.
+*Note*: Building the Unity demo project for the first time will change Xcode project file a lot.
+It is safe to commit the change into source control as it only performs necessary updates going forward.
 
 ## Unity Project
 
