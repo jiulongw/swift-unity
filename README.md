@@ -19,6 +19,9 @@ these updates.
 *Note*: Building the Unity demo project for the first time will change Xcode project file a lot.
 It is safe to commit the change into source control as it only performs necessary updates going forward.
 
+*Note*: `DemoApp/Unity/Classes` and `DemoApp/Unity/Libraries` are managed by the build process.
+Do not add new files manually into these folder or they will be deleted upon build.
+
 ## Unity Project
 
 A [post build process script][5] is added to Unity project. After each build, Xcode project gets information about
