@@ -1,8 +1,10 @@
-﻿using System.Linq;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
@@ -149,3 +151,4 @@ public class PostBuild
     }
 #endif
 }
+#endif
