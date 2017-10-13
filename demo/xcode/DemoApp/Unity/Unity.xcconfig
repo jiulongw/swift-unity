@@ -3,10 +3,36 @@
 UNITY_SCRIPTING_BACKEND = il2cpp;
 GCC_PREFIX_HEADER = DemoApp/Unity/Classes/Prefix.pch;
 
-OTHER_LDFLAGS = -weak-lSystem -weak_framework CoreMotion -weak_framework GameKit -weak_framework iAd -framework CoreGraphics -framework AVFoundation -framework CoreVideo -framework CoreMedia -framework SystemConfiguration -framework CoreLocation -framework MediaPlayer -framework CFNetwork -framework AudioToolbox -framework OpenAL -framework QuartzCore -framework OpenGLES -framework UIKit -framework Foundation -framework MediaToolbox -framework Metal -liconv.2 -liPhone-lib -lil2cpp;
+HEADER_SEARCH_PATHS = $(inherited) "DemoApp/Unity/Classes" "DemoApp/Unity/Classes/Unity" "DemoApp/Unity/Classes/Native" "DemoApp/Unity/Libraries" "DemoApp/Unity/Libraries/libil2cpp/include" ${PODS_HEADER_PATHS};
 
-HEADER_SEARCH_PATHS = "DemoApp/Unity/Classes" "DemoApp/Unity/Classes/Unity" "DemoApp/Unity/Classes/Native" "DemoApp/Unity/Libraries" "DemoApp/Unity/Libraries/libil2cpp/include";
-LIBRARY_SEARCH_PATHS = "DemoApp/Unity/Libraries" "DemoApp/Unity/Libraries/libil2cpp/include";
+LIBRARY_SEARCH_PATHS = $(inherited) "DemoApp/Unity/Libraries" "DemoApp/Unity/Libraries/libil2cpp/include" ${PODS_LIBRARY_PATHS};
 
 // If using .net 4.0 in Unity, append -DNET_4_0 to OTHER_CFLAGS
 OTHER_CFLAGS = $(inherited) -DINIT_SCRIPTING_BACKEND=1 -fno-strict-overflow -DRUNTIME_IL2CPP=1;
+
+OTHER_LDFLAGS = $(inherited) -weak-lSystem -weak_framework CoreMotion -weak_framework GameKit -weak_framework iAd -framework AVFoundation -framework AudioToolbox -framework CFNetwork -framework CoreGraphics -framework CoreLocation -framework CoreMedia -framework CoreVideo -framework Foundation -framework MediaPlayer -framework MediaToolbox -framework Metal -framework OpenAL -framework OpenGLES -framework QuartzCore -framework SystemConfiguration -framework UIKit -liconv.2 -liPhone-lib -lil2cpp ${PODS_LIBRARIES};
+
+// If your Unity project contains depencencies that uses cocoapod (e.g. GVR SDK), follow steps below.
+// 1. Open Unity generated Xcode project file (remember to open workspace instead of project so the pod
+//    projects will be built), and build everything.
+// 2. Find extra header search paths. Usually Unity will generate it in xcconfig files
+//    (e.g. .../unity_gvr_xcode/Pods/Target Support Files/Pods-Unity-iPhone/Pods-Unity-iPhone.release.xcconfig),
+//    and apply it here. Take GVR SDK for example:
+// PODS_ROOT = ${UNITY_IOS_EXPORT_PATH}/Pods
+// PODS_HEADER_PATHS = "${PODS_ROOT}/Headers/Public" "${PODS_ROOT}/Headers/Public/GTMSessionFetcher" "${PODS_ROOT}/Headers/Public/GVRSDK" "${PODS_ROOT}/Headers/Public/GoogleToolboxForMac";
+
+// 3. Find pods output file and copy them to this project. Xcode built them into temporary folders you can find them
+//    under Xcode tree Pods. For example, copy these three files for GVR SDK (your path may vary)
+//    cp ~/Library/Developer/Xcode/DerivedData/Unity-iPhone-bsgkfmaurmsxvgeqxqqbphqzgobq/Build/Products/Release-iphoneos/GoogleToolboxForMac/libGoogleToolboxForMac.a ${SRCROOT}/GVRSDK/libGoogleToolboxForMac.a
+//    cp ~/Library/Developer/Xcode/DerivedData/Unity-iPhone-bsgkfmaurmsxvgeqxqqbphqzgobq/Build/Products/Release-iphoneos/GTMSessionFetcher/libGTMSessionFetcher.a ${SRCROOT}/GVRSDK/libGTMSessionFetcher.a
+//    cp ${PODS_ROOT}/GVRSDK/Libraries/libGVRSDK.a ${SRCROOT}/GVRSDK/libGVRSDK.a
+//    Once copied you can add GVRSDK to LIBRARY_SEARCH_PATHS
+// PODS_LIBRARY_PATHS = GVRSDK DemoApp/Unity/Libraries/GoogleVR/Plugins/iOS
+
+// 4. Add dependency libraries to OTHER_LDFLAGS via PODS_LIBRARIES
+// PODS_LIBRARIES = -framework GLKit -ObjC -lGVRSDK -lGTMSessionFetcher -lGoogleToolboxForMac
+
+// 5. Add dependency bundle resources to Swift project. For GVR SDK, add Pods/GVRSDK/Resources/*.bundle from Unity genderated
+//    to Swift project and add them into build target.
+
+// 6. Build and run.
