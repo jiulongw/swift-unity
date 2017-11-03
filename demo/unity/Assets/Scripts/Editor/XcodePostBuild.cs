@@ -1,15 +1,18 @@
-﻿using System.Linq;
+﻿#if UNITY_IOS
+
+using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
 
-public class PostBuild
+public class XcodePostBuild
 {
-#if UNITY_IOS
     private const string XcodeProjectRoot = "../xcode";
 
     private const string XcodeProjectName = "DemoApp";
@@ -22,9 +25,18 @@ public class PostBuild
 
     private const string PbxFilePath = XcodeProjectName + ".xcodeproj/project.pbxproj";
 
+    private const string BackupExtension = ".bak";
+
     [PostProcessBuild]
     public static void OnPostBuild(BuildTarget target, string pathToBuiltProject)
     {
+        if (target != BuildTarget.iOS)
+        {
+            return;
+        }
+
+        PatchUnityNativeCode(pathToBuiltProject);
+
         UpdateUnityIOSExports(pathToBuiltProject);
 
         UpdateUnityProjectFiles(pathToBuiltProject);
@@ -94,6 +106,11 @@ public class PostBuild
 
         foreach (var f in newFiles)
         {
+            if (ShouldExcludeFile(f))
+            {
+                continue;
+            }
+
             var projPath = Path.Combine(projectPathPrefix, f);
             if (!pbx.ContainsFileByProjectPath(projPath))
             {
@@ -147,5 +164,149 @@ public class PostBuild
 
         return results.ToArray();
     }
-#endif
+
+    private static bool ShouldExcludeFile(string fileName)
+    {
+        if (fileName.EndsWith(".bak", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void PatchUnityNativeCode(string pathToBuiltProject)
+    {
+        EditMainMM(Path.Combine(pathToBuiltProject, "Classes/main.mm"));
+        EditUnityAppControllerH(Path.Combine(pathToBuiltProject, "Classes/UnityAppController.h"));
+        EditUnityAppControllerMM(Path.Combine(pathToBuiltProject, "Classes/UnityAppController.mm"));
+
+        if (Application.unityVersion == "2017.1.1f1")
+        {
+            EditMetalHelperMM(Path.Combine(pathToBuiltProject, "Classes/Unity/MetalHelper.mm"));
+        }
+    }
+
+    private static void EditMainMM(string path)
+    {
+        EditCodeFile(path, line =>
+        {
+            if (line.TrimStart().StartsWith("int main", StringComparison.Ordinal))
+            {
+                return line.Replace("int main", "int old_main");
+            }
+
+            return line;
+        });
+    }
+
+    private static void EditUnityAppControllerH(string path)
+    {
+        var inScope = false;
+
+        EditCodeFile(path, line =>
+        {
+            inScope |= line.Contains("inline UnityAppController");
+
+            if (inScope)
+            {
+                if (line.Trim() == "}")
+                {
+                    inScope = false;
+
+                    return new string[]
+                    {
+                        "// }",
+                        "",
+                        "NS_INLINE UnityAppController* GetAppController()",
+                        "{",
+                        "    NSObject<UIApplicationDelegate>* delegate = [UIApplication sharedApplication].delegate;",
+                        @"    UnityAppController* currentUnityController = (UnityAppController*)[delegate valueForKey: @""currentUnityController""];",
+                        "    return currentUnityController;",
+                        "}",
+                    };
+                }
+
+                return new string[] { "// " + line };
+            }
+
+            return new string[] { line };
+        });
+    }
+
+    private static void EditUnityAppControllerMM(string path)
+    {
+        var inScope = false;
+
+        EditCodeFile(path, line =>
+        {
+            inScope |= line.Contains("- (void)startUnity:");
+
+            if (inScope && line.Trim() == "}")
+            {
+                inScope = false;
+
+                return new string[]
+                {
+                    "// Post a notification so that Swift can load unity view once started.",
+                    @"[[NSNotificationCenter defaultCenter] postNotificationName: @""UnityReady"" object:self];",
+                    "}",
+                };
+            }
+
+            return new string[] { line };
+        });
+    }
+
+    private static void EditMetalHelperMM(string path)
+    {
+        EditCodeFile(path, line =>
+        {
+            if (line.Trim() == "surface->stencilRB = [surface->device newTextureWithDescriptor: stencilTexDesc];")
+            {
+                return new string[]
+                {
+                    "",
+                    "    // JW: default stencilTexDesc.usage has flag 1. In runtime it will cause assertion failure:",
+                    "    // validateRenderPassDescriptor:589: failed assertion `Texture at stencilAttachment has usage (0x01) which doesn't specify MTLTextureUsageRenderTarget (0x04)'",
+                    "    // Adding MTLTextureUsageRenderTarget seems to fix this issue.",
+                    "    stencilTexDesc.usage |= MTLTextureUsageRenderTarget;",
+                    line,
+                };
+            }
+
+            return new string[] { line };
+        });
+    }
+
+    private static void EditCodeFile(string path, Func<string, string> lineHandler)
+    {
+        EditCodeFile(path, line =>
+        {
+            return new string[] { lineHandler(line) };
+        });
+    }
+
+    private static void EditCodeFile(string path, Func<string, IEnumerable<string>> lineHandler)
+    {
+        var bakPath = path + ".bak";
+        File.Move(path, bakPath);
+
+        using (var reader = File.OpenText(bakPath))
+        using (var stream = File.Create(path))
+        using (var writer = new StreamWriter(stream))
+        {
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                var outputs = lineHandler(line);
+                foreach (var o in outputs)
+                {
+                    writer.WriteLine(o);
+                }
+            }
+        }
+    }
 }
+
+#endif

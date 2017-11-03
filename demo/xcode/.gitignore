@@ -73,13 +73,5 @@ DemoApp/Unity/Exports.xcconfig
 # Files under Libraries will be copied from Unity build during Xcode build
 DemoApp/Unity/Libraries/
 
-# Most files under Classes will be copied from Unity, however, changes to some files need to be persistent.
-DemoApp/Unity/Classes/*
-!DemoApp/Unity/Classes/Unity
-!DemoApp/Unity/Classes/UnityAppController.h
-!DemoApp/Unity/Classes/UnityAppController.mm
-!DemoApp/Unity/Classes/main.mm
-
-# Same applies to files under Classes/Unity
-DemoApp/Unity/Classes/Unity/*
-!DemoApp/Unity/Classes/Unity/MetalHelper.mm
+# Files under Classes will be copied from Unity build during Xcode build
+DemoApp/Unity/Classes/

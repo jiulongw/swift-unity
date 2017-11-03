@@ -13,9 +13,6 @@
 		164A97981F7B111F00D4DA8D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 164A97971F7B111F00D4DA8D /* Assets.xcassets */; };
 		164A979B1F7B111F00D4DA8D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 164A97991F7B111F00D4DA8D /* LaunchScreen.storyboard */; };
 		16C412841F7B132D00E32745 /* Exports.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 16C412831F7B132C00E32745 /* Exports.xcconfig */; };
-		16C413261F7B157A00E32745 /* MetalHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16C412A31F7B157A00E32745 /* MetalHelper.mm */; };
-		16C4136C1F7B157A00E32745 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16C413031F7B157A00E32745 /* main.mm */; };
-		16C4136F1F7B157A00E32745 /* UnityAppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16C413091F7B157A00E32745 /* UnityAppController.mm */; };
 		16C4157B1F7B16FB00E32745 /* rsync_exclude in Resources */ = {isa = PBXBuildFile; fileRef = 16C415781F7B16FA00E32745 /* rsync_exclude */; };
 		16C4157C1F7B16FB00E32745 /* UnityUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16C415791F7B16FA00E32745 /* UnityUtils.mm */; };
 /* End PBXBuildFile section */
@@ -30,10 +27,6 @@
 		164A979C1F7B111F00D4DA8D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		16C412831F7B132C00E32745 /* Exports.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Exports.xcconfig; sourceTree = "<group>"; };
 		16C412851F7B14B100E32745 /* Unity.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Unity.xcconfig; sourceTree = "<group>"; };
-		16C412A31F7B157A00E32745 /* MetalHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MetalHelper.mm; sourceTree = "<group>"; };
-		16C413031F7B157A00E32745 /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
-		16C413051F7B157A00E32745 /* UnityAppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnityAppController.h; sourceTree = "<group>"; };
-		16C413091F7B157A00E32745 /* UnityAppController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UnityAppController.mm; sourceTree = "<group>"; };
 		16C415781F7B16FA00E32745 /* rsync_exclude */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = rsync_exclude; sourceTree = "<group>"; };
 		16C415791F7B16FA00E32745 /* UnityUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UnityUtils.mm; sourceTree = "<group>"; };
 		16C4157A1F7B16FA00E32745 /* UnityUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnityUtils.h; sourceTree = "<group>"; };
@@ -85,31 +78,11 @@
 		16C412821F7B132C00E32745 /* Unity */ = {
 			isa = PBXGroup;
 			children = (
-				16C412861F7B157A00E32745 /* Classes */,
 				16C412831F7B132C00E32745 /* Exports.xcconfig */,
 				16C412851F7B14B100E32745 /* Unity.xcconfig */,
 				16C4157A1F7B16FA00E32745 /* UnityUtils.h */,
 				16C415791F7B16FA00E32745 /* UnityUtils.mm */,
 				16C415781F7B16FA00E32745 /* rsync_exclude */,
-			);
-			path = Unity;
-			sourceTree = "<group>";
-		};
-		16C412861F7B157A00E32745 /* Classes */ = {
-			isa = PBXGroup;
-			children = (
-				16C412871F7B157A00E32745 /* Unity */,
-				16C413031F7B157A00E32745 /* main.mm */,
-				16C413051F7B157A00E32745 /* UnityAppController.h */,
-				16C413091F7B157A00E32745 /* UnityAppController.mm */,
-			);
-			path = Classes;
-			sourceTree = "<group>";
-		};
-		16C412871F7B157A00E32745 /* Unity */ = {
-			isa = PBXGroup;
-			children = (
-				16C412A31F7B157A00E32745 /* MetalHelper.mm */,
 			);
 			path = Unity;
 			sourceTree = "<group>";
@@ -219,11 +192,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				164A97931F7B111F00D4DA8D /* ViewController.swift in Sources */,
-				16C4136C1F7B157A00E32745 /* main.mm in Sources */,
 				164A97911F7B111F00D4DA8D /* AppDelegate.swift in Sources */,
 				16C4157C1F7B16FB00E32745 /* UnityUtils.mm in Sources */,
-				16C4136F1F7B157A00E32745 /* UnityAppController.mm in Sources */,
-				16C413261F7B157A00E32745 /* MetalHelper.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
