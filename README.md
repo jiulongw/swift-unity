@@ -52,8 +52,9 @@ The `Classes` and `Libraries` folders need to be compiled into the Xcode project
 setup everything for you.
 
 We're going to make changes to some of the generated files. Here is a list of files that needs to be modified.
+The Unity post build script in the demo project will do all necessary modifications.
 
-* Classes/Unity/MetalHelper.mm
+* Classes/Unity/MetalHelper.mm (Only 2017.1.1f1)
 
   Add `MTLTextureUsageRenderTarget` to the stencil texture descriptor to fix runtime assertion failure.  Not sure if
   this is a bug in Xcode or Unity but following line fixed the issue.
@@ -93,8 +94,6 @@ We're going to make changes to some of the generated files. Here is a list of fi
 * Classes/main.mm
 
   Here we simply rename `main` so that it won't conflict with Swift's `main` entry.
-
-These files are added to source control and skipped by script that copies updates from Unity build.
 
 ### Setup UnityAppController
 
