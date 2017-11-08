@@ -162,5 +162,5 @@ cp -Rf "$UNITY_IOS_EXPORT_PATH/Data" "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Data"
 [2]: http://www.the-nerd.be/2015/08/20/a-better-way-to-integrate-unity3d-within-a-native-ios-application/
 [3]: https://developer.apple.com/library/content/documentation/Swift/Conceptual/BuildingCocoaApps/MixandMatch.html
 [4]: https://github.com/jiulongw/swift-unity/blob/master/demo/xcode/DemoApp/AppDelegate.swift
-[5]: https://github.com/jiulongw/swift-unity/blob/master/demo/unity/Assets/Scripts/Editor/PostBuild.cs
+[5]: https://github.com/jiulongw/swift-unity/blob/master/demo/unity/Assets/Scripts/Editor/XcodePostBuild.cs
 [6]: https://github.com/jiulongw/swift-unity/issues/8
