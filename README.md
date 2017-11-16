@@ -1,4 +1,4 @@
-# Embedding Unity Project into Xcode Swift Project
+# Integrating Unity Project into Xcode Swift Project
 
 This repo contains a demo Xcode 9.1 iOS project (Swift 4.0) that builds a single view app with an embeded Unity scene
 (Unity 2017.2.0f3) with two-way communication between Unity and Swift.  It contains automation script that could be
@@ -18,7 +18,7 @@ gets updated automatically everytime a new Unity build is exported.
 First open Unity project, open `Demo` scene, open `Build Settings` and switch to iOS platform, then hit `Build`.  You
 can put output anywhere but better put it to some temporary folder such as `/tmp`.
 
-Once build succeeded, open Xcode project, select target device (Unity does not support x86_64) and hit
+Once build succeeded, open Xcode project, select target device (Unity does not support `x86_64`) and hit
 `Build and then run`.  You might need to change bundle identifier if Xcode has problem creating provisioning profile.
 
 ## How to use it in other projects
@@ -84,21 +84,20 @@ SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 
 5. Add following build scripts to your Xcode build target. You can copy from `DemoApp` settings. Note the order.
 
-![Xcode build script 1](https://github.com/jiulongw/swift-unity/raw/master/images/xcode_build_script_1.png)
-
 ```sh
 echo "Syncing code from $UNITY_IOS_EXPORT_PATH..."
 rsync -rc --exclude-from=$PRODUCT_NAME/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Classes/ $PRODUCT_NAME/Unity/Classes/
 rsync -rc --exclude-from=$PRODUCT_NAME/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Libraries/ $PRODUCT_NAME/Unity/Libraries/
 ```
+![Xcode build script 1](https://github.com/jiulongw/swift-unity/raw/master/images/xcode_build_script_1.png)
 
-![Xcode build script 2](https://github.com/jiulongw/swift-unity/raw/master/images/xcode_build_script_2.png)
 
 ```sh
 echo "Syncing data from $UNITY_IOS_EXPORT_PATH..."
 rm -rf "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Data"
 cp -Rf "$UNITY_IOS_EXPORT_PATH/Data" "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Data"
 ```
+![Xcode build script 2](https://github.com/jiulongw/swift-unity/raw/master/images/xcode_build_script_2.png)
 
 6. Update `AppDelegate.swift` to initialize Unity during application start.  Follow the [sample AppDelegate code][4].
 
