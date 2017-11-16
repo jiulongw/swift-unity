@@ -56,14 +56,14 @@ public static class XcodePostBuild
     /// Current directory is the root directory of this Unity project, i.e. the directory of 'Assets' folder.
     /// Sample value: "../xcode"
     /// </summary>
-    private const string XcodeProjectRoot = "../xcode";
+    private const string XcodeProjectRoot = <PROJECT PATH>;
 
     /// <summary>
     /// Name of the Xcode project.
     /// This script looks for '${XcodeProjectName} + ".xcodeproj"' under '${XcodeProjectRoot}'.
     /// Sample value: "DemoApp"
     /// </summary>
-    private const string XcodeProjectName = "DemoApp";
+    private const string XcodeProjectName = <PROJECT NAME>;
 
     /// <summary>
     /// Directories, relative to the root directory of the Xcode project, to put generated Unity iOS build output.

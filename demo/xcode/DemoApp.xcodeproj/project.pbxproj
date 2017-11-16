@@ -25,12 +25,12 @@
 		164A97971F7B111F00D4DA8D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		164A979A1F7B111F00D4DA8D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		164A979C1F7B111F00D4DA8D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		16817A8E1FBCCEAD00FA0093 /* Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Bridging-Header.h"; sourceTree = "<group>"; };
 		16C412831F7B132C00E32745 /* Exports.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Exports.xcconfig; sourceTree = "<group>"; };
 		16C412851F7B14B100E32745 /* Unity.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Unity.xcconfig; sourceTree = "<group>"; };
 		16C415781F7B16FA00E32745 /* rsync_exclude */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = rsync_exclude; sourceTree = "<group>"; };
 		16C415791F7B16FA00E32745 /* UnityUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = UnityUtils.mm; sourceTree = "<group>"; };
 		16C4157A1F7B16FA00E32745 /* UnityUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnityUtils.h; sourceTree = "<group>"; };
-		16C415801F7B18E700E32745 /* DemoApp-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DemoApp-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,7 +70,6 @@
 				164A97971F7B111F00D4DA8D /* Assets.xcassets */,
 				164A97991F7B111F00D4DA8D /* LaunchScreen.storyboard */,
 				164A979C1F7B111F00D4DA8D /* Info.plist */,
-				16C415801F7B18E700E32745 /* DemoApp-Bridging-Header.h */,
 			);
 			path = DemoApp;
 			sourceTree = "<group>";
@@ -78,6 +77,7 @@
 		16C412821F7B132C00E32745 /* Unity */ = {
 			isa = PBXGroup;
 			children = (
+				16817A8E1FBCCEAD00FA0093 /* Bridging-Header.h */,
 				16C412831F7B132C00E32745 /* Exports.xcconfig */,
 				16C412851F7B14B100E32745 /* Unity.xcconfig */,
 				16C4157A1F7B16FA00E32745 /* UnityUtils.h */,
@@ -169,7 +169,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "echo \"Syncing code from $UNITY_IOS_EXPORT_PATH...\"\nrsync -rc --exclude-from=DemoApp/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Classes/ DemoApp/Unity/Classes/\nrsync -rc --exclude-from=DemoApp/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Libraries/ DemoApp/Unity/Libraries/\n";
+			shellScript = "echo \"Syncing code from $UNITY_IOS_EXPORT_PATH...\"\nrsync -rc --exclude-from=$PRODUCT_NAME/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Classes/ $PRODUCT_NAME/Unity/Classes/\nrsync -rc --exclude-from=$PRODUCT_NAME/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Libraries/ $PRODUCT_NAME/Unity/Libraries/\n";
 		};
 		16C4157F1F7B178800E32745 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -342,7 +342,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.swift-unity.DemoApp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "DemoApp/DemoApp-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -362,7 +361,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.swift-unity.DemoApp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "DemoApp/DemoApp-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
