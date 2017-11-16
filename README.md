@@ -9,10 +9,10 @@ easily re-used in existing Unity and Swift projects.
 This would not be possible without [tutorial by BLITZ][1] and [video by the-nerd Frederik Jacques][2].  Minor updates
 are applied to fit latest Xcode and Unity releases.
 
-## Why should I use it
-If you need to do same thing (lot of things...) more than once, you'd better automate it.  If you are tired of these
-tedious steps every time you export a new Unity build, you will love this automation.  Once integrated, Swift project
-gets updated automatically everytime a new Unity build is exported.
+## Why did I create this
+I like to automate things when I find myself doing the same thing several times, and potentially over and over again.
+If you are (like I am) tired of these tedious steps every time you export a new Unity build, you will love this
+automation.  Once integrated, Swift project gets updated automatically everytime a new Unity build is exported.
 
 ## How to run the demo
 First open Unity project, open `Demo` scene, open `Build Settings` and switch to iOS platform, then hit `Build`.  You
