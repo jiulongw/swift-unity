@@ -116,6 +116,16 @@ Now you should be good to go.  Give it a try!
 Note: Building the Unity project for the first time will modify Xcode project file a lot.
 It is safe to commit the change into source control as it only performs necessary updates going forward.
 
+## Compatibility
+### Unity
+* 2017.1.1
+* 2017.1.2
+* 2017.2.0
+
+### Xcode
+* Xcode 9.0
+* Xcode 9.1
+
 ## FAQ
 
 [Exports.xcconfig file missing][6]
