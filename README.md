@@ -22,9 +22,9 @@ are applied to fit latest Xcode and Unity releases.
 * Xcode 9.2
 
 ## FAQ
-[Exports.xcconfig file missing][6]
-[Xcode compile error when using .Net 4.6 backend in Unity][9]
-[Entry point (`_main`) undefined][10]
+* [Exports.xcconfig file missing][6]
+* [Xcode compile error when using .Net 4.6 backend in Unity][9]
+* [Entry point (`_main`) undefined][10]
 
 ## Why did I create this
 I like to automate things when I find myself doing the same thing several times, and potentially over and over again.
