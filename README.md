@@ -6,8 +6,25 @@ easily re-used in existing Unity and Swift projects.
 
 ![Demo Video](https://github.com/jiulongw/swift-unity/raw/master/images/demo.gif)
 
-This would not be possible without [tutorial by BLITZ][1] and [video by the-nerd Frederik Jacques][2].  Minor updates
+This would not be possible without [tutorial by BLITZ][1] and [video by the-nerd Frederik Jacques][2].  Several updates
 are applied to fit latest Xcode and Unity releases.
+
+## Compatibility
+### Unity
+* 2017.1.1
+* 2017.1.2
+* 2017.2.0
+* 2017.3.0
+
+### Xcode
+* Xcode 9.0
+* Xcode 9.1
+* Xcode 9.2
+
+## FAQ
+[Exports.xcconfig file missing][6]
+[Xcode compile error when using .Net 4.6 backend in Unity][9]
+[Entry point (`_main`) undefined][10]
 
 ## Why did I create this
 I like to automate things when I find myself doing the same thing several times, and potentially over and over again.
@@ -96,7 +113,7 @@ rsync -rc --exclude-from=$PRODUCT_NAME/Unity/rsync_exclude --delete $UNITY_IOS_E
 echo "Syncing data from $UNITY_IOS_EXPORT_PATH..."
 rm -rf "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Data"
 cp -Rf "$UNITY_IOS_EXPORT_PATH/Data" "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Data"
-```
+```demo/unity/Assets/Scripts/NativeBridge.cs
 ![Xcode build script 2](https://github.com/jiulongw/swift-unity/raw/master/images/xcode_build_script_2.png)
 
 6. Update `AppDelegate.swift` to initialize Unity during application start.  Follow the [sample AppDelegate code][4].
@@ -115,21 +132,6 @@ Now you should be good to go.  Give it a try!
 Note: Building the Unity project for the first time will modify Xcode project file a lot.
 It is safe to commit the change into source control as it only performs necessary updates going forward.
 
-## Compatibility
-### Unity
-* 2017.1.1
-* 2017.1.2
-* 2017.2.0
-* 2017.3.0
-
-### Xcode
-* Xcode 9.0
-* Xcode 9.1
-* Xcode 9.2
-
-## FAQ
-
-[Exports.xcconfig file missing][6]
 
 ## Updates
 * 12/22/2017 - Support Unity version 2017.3.0f3.
@@ -148,3 +150,5 @@ It is safe to commit the change into source control as it only performs necessar
 [6]: https://github.com/jiulongw/swift-unity/issues/8
 [7]: https://github.com/jiulongw/swift-unity/tree/master/demo/xcode/DemoApp/Unity
 [8]: https://github.com/jiulongw/swift-unity/blob/master/demo/xcode/DemoApp/ViewController.swift
+[9]: https://github.com/jiulongw/swift-unity/issues/31
+[10]: https://github.com/jiulongw/swift-unity/issues/17
