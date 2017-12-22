@@ -259,6 +259,11 @@ public static class XcodePostBuild
         {
             EditMetalHelperMM(Path.Combine(pathToBuiltProject, "Classes/Unity/MetalHelper.mm"));
         }
+
+        if (Application.unityVersion == "2017.3.0f3")
+        {
+            EditSplashScreenMM(Path.Combine(pathToBuiltProject, "Classes/UI/SplashScreen.mm"));
+        }
     }
 
     /// <summary>
@@ -387,6 +392,61 @@ public static class XcodePostBuild
                     "    stencilTexDesc.usage |= MTLTextureUsageRenderTarget;",
                     line,
                 };
+            }
+
+            return new string[] { line };
+        });
+    }
+
+    /// <summary>
+    /// Edit 'SplashScreen.mm': Unity introduces its own 'LaunchScreen.storyboard' since 2017.3.0f3.
+    /// Disable it here and use Swift project's launch screen instead.
+    /// </summary>
+    private static void EditSplashScreenMM(string path) {
+        var markerDetected = false;
+        var markerAdded = false;
+        var inScope = false;
+        var level = 0;
+
+        EditCodeFile(path, line =>
+        {
+            inScope |= line.Trim() == "void ShowSplashScreen(UIWindow* window)";
+            markerDetected |= line.Contains(TouchedMarker);
+
+            if (inScope && !markerDetected)
+            {
+                if (line.Trim() == "{")
+                {
+                    level++;
+                }
+                else if (line.Trim() == "}")
+                {
+                    level--;
+                }
+
+                if (line.Trim() == "}" && level == 0)
+                {
+                    inScope = false;
+                }
+
+                if (level > 0 && line.Trim().StartsWith("bool hasStoryboard"))
+                {
+                    return new string[]
+                    {
+                        "    // " + line,
+                        "    bool hasStoryboard = false;",
+                    };
+                }
+
+                if (!markerAdded)
+                {
+                    markerAdded = true;
+                    return new string[]
+                    {
+                        "// Modified by " + TouchedMarker,
+                        line,
+                    };
+                }
             }
 
             return new string[] { line };

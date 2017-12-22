@@ -120,16 +120,19 @@ It is safe to commit the change into source control as it only performs necessar
 * 2017.1.1
 * 2017.1.2
 * 2017.2.0
+* 2017.3.0
 
 ### Xcode
 * Xcode 9.0
 * Xcode 9.1
+* Xcode 9.2
 
 ## FAQ
 
 [Exports.xcconfig file missing][6]
 
 ## Updates
+* 12/22/2017 - Support Unity version 2017.3.0f3.
 * 11/15/2017 - Updated demo focusing on reusability. Updated REAME accordingly.
 * 11/2/2017 - Support Unity version from 2017.1.1f1 to 2017.2.0f3.
 * 10/25/2017 - Added FAQ about missing Exports.xcconfig file.
