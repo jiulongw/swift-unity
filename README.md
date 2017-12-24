@@ -113,7 +113,8 @@ rsync -rc --exclude-from=$PRODUCT_NAME/Unity/rsync_exclude --delete $UNITY_IOS_E
 echo "Syncing data from $UNITY_IOS_EXPORT_PATH..."
 rm -rf "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Data"
 cp -Rf "$UNITY_IOS_EXPORT_PATH/Data" "$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Data"
-```demo/unity/Assets/Scripts/NativeBridge.cs
+```
+
 ![Xcode build script 2](https://github.com/jiulongw/swift-unity/raw/master/images/xcode_build_script_2.png)
 
 6. Update `AppDelegate.swift` to initialize Unity during application start.  Follow the [sample AppDelegate code][4].
