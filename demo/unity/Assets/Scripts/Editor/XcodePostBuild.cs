@@ -261,7 +261,7 @@ public static class XcodePostBuild
         }
 
         // TODO: Parse unity version number and do range comparison.
-        if (Application.unityVersion == "2017.3.0f3" || Application.unityVersion == "2017.3.1f3")
+        if (Application.unityVersion.StartsWith("2017.3.0f") || Application.unityVersion.StartsWith("2017.3.1f"))
         {
             EditSplashScreenMM(Path.Combine(pathToBuiltProject, "Classes/UI/SplashScreen.mm"));
         }
