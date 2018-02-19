@@ -260,7 +260,8 @@ public static class XcodePostBuild
             EditMetalHelperMM(Path.Combine(pathToBuiltProject, "Classes/Unity/MetalHelper.mm"));
         }
 
-        if (Application.unityVersion == "2017.3.0f3")
+        // TODO: Parse unity version number and do range comparison.
+        if (Application.unityVersion == "2017.3.0f3" || Application.unityVersion == "2017.3.1f3")
         {
             EditSplashScreenMM(Path.Combine(pathToBuiltProject, "Classes/UI/SplashScreen.mm"));
         }
