@@ -167,9 +167,9 @@ public static class XcodePostBuild
     private static void ProcessUnityDirectory(PBXProject pbx, string src, string dest, string projectPathPrefix)
     {
         var targetGuid = pbx.TargetGuidByName(XcodeProjectName);
-		if (string.IsNullOrEmpty(targetGuid)) {
-			throw new Exception( string.Format( "TargetGuid could not be found for '{0}'", XcodeProjectName) );
-		}
+        if (string.IsNullOrEmpty(targetGuid)) {
+            throw new Exception(string.Format("TargetGuid could not be found for '{0}'", XcodeProjectName));
+        }
 
         // newFiles: array of file names in build output that do not exist in project.pbx manifest.
         // extraFiles: array of file names in project.pbx manifest that do not exist in build output.
