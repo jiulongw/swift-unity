@@ -16,6 +16,8 @@ are applied to fit latest Xcode and Unity releases.
 * 2017.2.0
 * 2017.3.0
 * 2017.3.1
+* 2017.4.1
+* 2017.4.2
 
 ### Xcode
 * Xcode 9.0
