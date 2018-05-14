@@ -102,12 +102,12 @@ SWIFT_OBJC_BRIDGING_HEADER = $(PRODUCT_NAME)/Unity/Bridging-Header.h;
 SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 ```
 
-5. Add following build scripts to your Xcode build target. You can copy from `DemoApp` settings. Note the order.
+5. Add following build scripts to your Xcode build target. You can copy from `DemoApp` settings. Note the order. If your project name has space(s) in it, surround the `$PRODUCT_NAME` with double quote.
 
 ```sh
 echo "Syncing code from $UNITY_IOS_EXPORT_PATH..."
-rsync -rc --exclude-from=$PRODUCT_NAME/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Classes/ $PRODUCT_NAME/Unity/Classes/
-rsync -rc --exclude-from=$PRODUCT_NAME/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Libraries/ $PRODUCT_NAME/Unity/Libraries/
+rsync -rc --exclude-from="$PRODUCT_NAME"/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Classes/ "$PRODUCT_NAME"/Unity/Classes/
+rsync -rc --exclude-from="$PRODUCT_NAME"/Unity/rsync_exclude --delete $UNITY_IOS_EXPORT_PATH/Libraries/ "$PRODUCT_NAME"/Unity/Libraries/
 ```
 ![Xcode build script 1](https://github.com/jiulongw/swift-unity/raw/master/images/xcode_build_script_1.png)
 
