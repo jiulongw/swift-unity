@@ -267,7 +267,8 @@ public static class XcodePostBuild
         if (Application.unityVersion.StartsWith("2017.3.0f")
                 || Application.unityVersion.StartsWith("2017.3.1f")
                 || Application.unityVersion.StartsWith("2017.4.1f")
-                || Application.unityVersion.StartsWith("2017.4.2f"))
+                || Application.unityVersion.StartsWith("2017.4.2f")
+		        || Application.unityVersion.StartsWith("2018.1.6f"))
         {
             EditSplashScreenMM(Path.Combine(pathToBuiltProject, "Classes/UI/SplashScreen.mm"));
         }
