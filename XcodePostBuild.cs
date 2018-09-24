@@ -53,7 +53,7 @@ public static class XcodePostBuild
     /// Path to the root directory of Xcode project.
     /// This should point to the directory of '${XcodeProjectName}.xcodeproj'.
     /// It is recommended to use relative path here.
-    /// Current directory is the root directory of this Unity project, i.e. the directory of 'Assets' folder.
+    /// Current directory is the root directory of this Unity project, i.e. the directory that contains the 'Assets' folder.
     /// Sample value: "../xcode"
     /// </summary>
     private const string XcodeProjectRoot = <PROJECT PATH>;
