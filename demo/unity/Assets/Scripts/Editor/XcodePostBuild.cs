@@ -1,4 +1,4 @@
-﻿/*
+/*
 MIT License
 
 Copyright (c) 2017 Jiulong Wang
@@ -53,7 +53,7 @@ public static class XcodePostBuild
     /// Path to the root directory of Xcode project.
     /// This should point to the directory of '${XcodeProjectName}.xcodeproj'.
     /// It is recommended to use relative path here.
-    /// Current directory is the root directory of this Unity project, i.e. the directory of 'Assets' folder.
+    /// Current directory is the root directory of this Unity project, i.e. the directory that contains the 'Assets' folder.
     /// Sample value: "../xcode"
     /// </summary>
     private const string XcodeProjectRoot = "../xcode";
@@ -250,25 +250,48 @@ public static class XcodePostBuild
     }
 
     /// <summary>
+    /// Replaces the character component of Unity's version number with a period
+    /// and the decimal ASCII value of that character, to create an ersatz revision
+    /// number.
+    /// </summary>
+    /// <returns>A Version struct that can be used for range comparisons.</returns>
+    /// <param name="versionString">Unity's version string, formatted as [YEAR].[MINOR].[PATCH][CHARACTER][REVISION].</param>
+    private static Version ParseUnityVersionNumber(string versionString)
+    {
+        for (int i = versionString.Length - 1; i >= 0; --i)
+        {
+            var token = versionString[i];
+            if (char.IsLetter(token))
+            {
+                versionString = versionString
+                    .Remove(i)
+                    .Insert(i, string.Format(".{0}", (int)token));
+            }
+        }
+
+        return new Version(versionString);
+    }
+
+    static Version UNITY_VERSION_FOR_METAL_HELPER = ParseUnityVersionNumber("2017.1.1f1");
+    static Version MIN_UNITY_VERSION_FOR_SPLASH_SCREEN = new Version(2017, 3, 0);
+
+    /// <summary>
     /// Make necessary changes to Unity build output that enables it to be embedded into existing Xcode project.
     /// </summary>
     private static void PatchUnityNativeCode(string pathToBuiltProject)
     {
+        var unityVersion = ParseUnityVersionNumber(Application.unityVersion);
+
         EditMainMM(Path.Combine(pathToBuiltProject, "Classes/main.mm"));
         EditUnityAppControllerH(Path.Combine(pathToBuiltProject, "Classes/UnityAppController.h"));
         EditUnityAppControllerMM(Path.Combine(pathToBuiltProject, "Classes/UnityAppController.mm"));
 
-        if (Application.unityVersion == "2017.1.1f1")
+        if (unityVersion == UNITY_VERSION_FOR_METAL_HELPER)
         {
             EditMetalHelperMM(Path.Combine(pathToBuiltProject, "Classes/Unity/MetalHelper.mm"));
         }
 
-        // TODO: Parse unity version number and do range comparison.
-        if (Application.unityVersion.StartsWith("2017.3.0f")
-                || Application.unityVersion.StartsWith("2017.3.1f")
-                || Application.unityVersion.StartsWith("2017.4.1f")
-                || Application.unityVersion.StartsWith("2017.4.2f")
-		        || Application.unityVersion.StartsWith("2018.1.6f"))
+        if (unityVersion >= MIN_UNITY_VERSION_FOR_SPLASH_SCREEN)
         {
             EditSplashScreenMM(Path.Combine(pathToBuiltProject, "Classes/UI/SplashScreen.mm"));
         }
