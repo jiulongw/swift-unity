@@ -119,13 +119,29 @@ public static class XcodePostBuild
         config.AppendLine();
 
         var configPath = Path.Combine(XcodeProjectRoot, ExportsConfigProjectPath);
-        var configDir = Path.GetDirectoryName(configPath);
-        if (!Directory.Exists(configDir))
-        {
-            Directory.CreateDirectory(configDir);
-        }
+        FillDirectories(configPath);
 
         File.WriteAllText(configPath, config.ToString());
+    }
+
+    private static void FillDirectories(string path)
+    {
+        var root = new DirectoryInfo(Path.GetDirectoryName(path));
+        var dirs = new List<DirectoryInfo>();
+        while (root != null)
+        {
+            dirs.Add(root);
+            root = root.Parent;
+        }
+
+        dirs.Reverse();
+        foreach (var dir in dirs)
+        {
+            if (!dir.Exists)
+            {
+                dir.Create();
+            }
+        }
     }
 
     /// <summary>
