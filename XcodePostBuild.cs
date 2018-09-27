@@ -50,6 +50,12 @@ using UnityEditor.iOS.Xcode;
 public static class XcodePostBuild
 {
     /// <summary>
+    /// Set to false to disable this post-processor, so you can build proper iOS app projects
+    /// from the same code base.
+    /// </summary>
+    const bool enabled = true;
+
+    /// <summary>
     /// Path to the root directory of Xcode project.
     /// This should point to the directory of '${XcodeProjectName}.xcodeproj'.
     /// It is recommended to use relative path here.
@@ -89,7 +95,7 @@ public static class XcodePostBuild
     [PostProcessBuild]
     public static void OnPostBuild(BuildTarget target, string pathToBuiltProject)
     {
-        if (target != BuildTarget.iOS)
+        if (!enabled || target != BuildTarget.iOS)
         {
             return;
         }
@@ -167,7 +173,8 @@ public static class XcodePostBuild
     private static void ProcessUnityDirectory(PBXProject pbx, string src, string dest, string projectPathPrefix)
     {
         var targetGuid = pbx.TargetGuidByName(XcodeProjectName);
-        if (string.IsNullOrEmpty(targetGuid)) {
+        if (string.IsNullOrEmpty(targetGuid))
+        {
             throw new Exception(string.Format("TargetGuid could not be found for '{0}'", XcodeProjectName));
         }
 
@@ -433,7 +440,8 @@ public static class XcodePostBuild
     /// Edit 'SplashScreen.mm': Unity introduces its own 'LaunchScreen.storyboard' since 2017.3.0f3.
     /// Disable it here and use Swift project's launch screen instead.
     /// </summary>
-    private static void EditSplashScreenMM(string path) {
+    private static void EditSplashScreenMM(string path)
+    {
         var markerDetected = false;
         var markerAdded = false;
         var inScope = false;
