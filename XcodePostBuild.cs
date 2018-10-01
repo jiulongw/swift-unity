@@ -302,6 +302,7 @@ In order for this to work, necessary changes to the target Xcode Swift project a
             XcodeProjectRoot,
             Path.ChangeExtension(XcodeProjectName, "xcodeproj"),
             "project.pbxproj");
+
         var pbx = new PBXProject();
         pbx.ReadFromFile(pbxPath);
 
@@ -318,6 +319,20 @@ In order for this to work, necessary changes to the target Xcode Swift project a
             Combine(pathToBuiltProject, "Libraries"),
             Combine(XcodeProjectRoot, librariesPath),
             librariesPath);
+
+        string dataPath = Combine(XcodeProjectName, "Data");
+        ProcessUnityDirectory(
+            pbx,
+            Combine(pathToBuiltProject, "Data"),
+            Combine(XcodeProjectRoot, dataPath),
+            dataPath);
+
+        string frameworksPath = Combine(XcodeProjectName, "Frameworks");
+        ProcessUnityDirectory(
+            pbx,
+            Combine(pathToBuiltProject, "Frameworks"),
+            Combine(XcodeProjectRoot, frameworksPath),
+            frameworksPath);
 
         pbx.WriteToFile(pbxPath);
     }
