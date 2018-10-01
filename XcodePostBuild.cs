@@ -47,13 +47,13 @@ using UnityEditor.iOS.Xcode;
 /// Especially the 'AppDelegate.swift' should be modified to properly initialize Unity.
 /// See https://github.com/jiulongw/swift-unity for details.
 /// </summary>
-public static class XcodePostBuild
+public class XcodePostBuild : EditorWindow
 {
     /// <summary>
     /// Set to false to disable this post-processor, so you can build proper iOS app projects
     /// from the same code base.
     /// </summary>
-    const bool enabled = true;
+    private bool enabled = true;
 
     /// <summary>
     /// Path to the root directory of Xcode project.
@@ -62,55 +62,197 @@ public static class XcodePostBuild
     /// Current directory is the root directory of this Unity project, i.e. the directory that contains the 'Assets' folder.
     /// Sample value: "../xcode"
     /// </summary>
-    private const string XcodeProjectRoot = <PROJECT PATH>;
+    private string XcodeProjectRoot;
 
     /// <summary>
     /// Name of the Xcode project.
     /// This script looks for '${XcodeProjectName} + ".xcodeproj"' under '${XcodeProjectRoot}'.
     /// Sample value: "DemoApp"
     /// </summary>
-    private const string XcodeProjectName = <PROJECT NAME>;
-
-    /// <summary>
-    /// Directories, relative to the root directory of the Xcode project, to put generated Unity iOS build output.
-    /// </summary>
-    private const string ClassesProjectPath = XcodeProjectName + "/Unity/Classes";
-    private const string LibrariesProjectPath = XcodeProjectName + "/Unity/Libraries";
-
-    /// <summary>
-    /// Path, relative to the root directory of the Xcode project, to put information about generated Unity output.
-    /// </summary>
-    private const string ExportsConfigProjectPath = XcodeProjectName + "/Unity/Exports.xcconfig";
-
-    private const string PbxFilePath = XcodeProjectName + ".xcodeproj/project.pbxproj";
-
-    private const string BackupExtension = ".bak";
+    private string XcodeProjectName;
 
     /// <summary>
     /// The identifier added to touched file to avoid double edits when building to existing directory without
     /// replace existing content.
     /// </summary>
-    private const string TouchedMarker = "https://github.com/jiulongw/swift-unity#v1";
+    private const string PROJECT_URL = "https://github.com/jiulongw/swift-unity";
+    private const string TOUCH_MARKER = PROJECT_URL + "#v1";
+
+    private static GUIStyle LINK_STYLE;
+
+#if UNITY_IOS
+    [MenuItem("Tools/SwiftUnity")]
+    public static void ShowConfiguration()
+    {
+        GetWindow(typeof(XcodePostBuild));
+    }
+#endif
+
+    void OnEnable()
+    {
+        if (LINK_STYLE == null)
+        {
+            LINK_STYLE = new GUIStyle
+            {
+                normal = new GUIStyleState
+                {
+                    textColor = Color.Lerp(Color.blue, Color.white, 0.5f)
+                }
+            };
+        }
+    }
+
+    static string[] XCODEPROJ_FILTER = { "Xcode project files", "xcodeproj" };
+    void OnGUI()
+    {
+        GUILayout.Label("Swift-Unity", EditorStyles.boldLabel);
+
+        enabled = EditorGUILayout.BeginToggleGroup("Enabled", enabled);
+        GUILayout.Label(@"Enables Unity iOS build output to be embedded into existing Xcode Swift project.
+
+However, since this script touches Unity iOS build output, you will not be able to use Unity iOS build directly in Xcode. As a result, it is recommended to put Unity iOS build output into a temporary directory that you generally do not touch, such as '/tmp'.
+
+In order for this to work, necessary changes to the target Xcode Swift project are needed. Especially the 'AppDelegate.swift' should be modified to properly initialize Unity. For details, see:",
+                       EditorStyles.wordWrappedLabel);
+
+        if (GUILayout.Button(PROJECT_URL, LINK_STYLE))
+        {
+            Application.OpenURL(PROJECT_URL);
+        }
+
+        GUILayout.Label("Settings", EditorStyles.boldLabel);
+        {
+            var currentBuildLocation = EditorUserBuildSettings.GetBuildLocation(BuildTarget.iOS);
+            GUILayout.Label(string.Format("Current Build Location: {0}", Abs2Rel(currentBuildLocation)));
+
+            if (string.IsNullOrEmpty(XcodeProjectRoot))
+            {
+                XcodeProjectRoot = Path.GetDirectoryName(Environment.CurrentDirectory);
+            }
+
+            if (string.IsNullOrEmpty(XcodeProjectName))
+            {
+                XcodeProjectName = "Xcode-Project";
+            }
+
+            var xcodeProjectFile = Abs2Rel(Path.ChangeExtension(Combine(XcodeProjectRoot, XcodeProjectName), "xcodeproj"));
+            xcodeProjectFile = EditorGUILayout.TextField("Xcode Project File", xcodeProjectFile);
+
+            if (GUILayout.Button("browse..."))
+            {
+                xcodeProjectFile = EditorUtility.OpenFilePanelWithFilters("Select Xcode Project File", Path.GetDirectoryName(xcodeProjectFile), XCODEPROJ_FILTER);
+            }
+
+            XcodeProjectName = Path.GetFileNameWithoutExtension(xcodeProjectFile);
+            XcodeProjectRoot = Path.GetDirectoryName(xcodeProjectFile);
+
+            if (GUILayout.Button("Run now!"))
+            {
+                OnPostBuild(BuildTarget.iOS, currentBuildLocation);
+            }
+        }
+        EditorGUILayout.EndToggleGroup();
+    }
+
+    static string Combine(params string[] parts)
+    {
+        if (parts == null || parts.Length == 0)
+        {
+            return null;
+        }
+        else
+        {
+            var path = parts[0];
+            for (int i = 1; i < parts.Length; ++i)
+            {
+                path = Path.Combine(path, parts[i]);
+            }
+            return path;
+        }
+    }
+
+    /// <summary>
+    /// Creates a file path that is relative to the currently-edited demo path.
+    /// </summary>
+    /// <returns>The relative path.</returns>
+    /// <param name="fullPath">Full path.</param>
+    static string Abs2Rel(string fullPath)
+    {
+        if (Path.IsPathRooted(fullPath))
+        {
+            var partsA = Environment.CurrentDirectory.Split(Path.DirectorySeparatorChar).ToList();
+            var partsB = fullPath.Split(Path.DirectorySeparatorChar).ToList();
+
+            while (partsA.Count > 0
+                   && partsB.Count > 0
+                   && partsA[0] == partsB[0])
+            {
+                partsA.RemoveAt(0);
+                partsB.RemoveAt(0);
+            }
+
+#pragma warning disable XS0001 // Find APIs marked as TODO in Mono
+            var sb = new StringBuilder();
+#pragma warning restore XS0001 // Find APIs marked as TODO in Mono
+            foreach (var part in partsA)
+            {
+                sb.Append("..");
+                sb.Append(Path.DirectorySeparatorChar);
+            }
+
+            var namePart = partsB.Last();
+            partsB.RemoveAt(partsB.Count - 1);
+
+            foreach (var part in partsB)
+            {
+                sb.Append(part);
+                sb.Append(Path.DirectorySeparatorChar);
+            }
+
+            sb.Append(namePart);
+
+            return sb.ToString();
+        }
+        else
+        {
+            return fullPath;
+        }
+    }
+
+    /// <summary>
+    /// Resolves an absolute path from a path that is relative to the currently-edited
+    /// demo path.
+    /// </summary>
+    /// <returns>The absolute path.</returns>
+    /// <param name="relativePath">Relative path.</param>
+    static string Rel2Abs(string relativePath)
+    {
+        if (Path.IsPathRooted(relativePath))
+        {
+            return relativePath;
+        }
+        else
+        {
+            return Combine(Environment.CurrentDirectory, relativePath);
+        }
+    }
 
     [PostProcessBuild]
     public static void OnPostBuild(BuildTarget target, string pathToBuiltProject)
     {
-        if (!enabled || target != BuildTarget.iOS)
+        var build = GetWindow<XcodePostBuild>();
+        if (build.enabled && target == BuildTarget.iOS)
         {
-            return;
+            PatchUnityNativeCode(pathToBuiltProject);
+            build.UpdateUnityIOSExports(pathToBuiltProject);
+            build.UpdateUnityProjectFiles(pathToBuiltProject);
         }
-
-        PatchUnityNativeCode(pathToBuiltProject);
-
-        UpdateUnityIOSExports(pathToBuiltProject);
-
-        UpdateUnityProjectFiles(pathToBuiltProject);
     }
 
     /// <summary>
     /// Writes current Unity version and output path to 'Exports.xcconfig' file.
     /// </summary>
-    private static void UpdateUnityIOSExports(string pathToBuiltProject)
+    void UpdateUnityIOSExports(string pathToBuiltProject)
     {
         var config = new StringBuilder();
         config.AppendFormat("UNITY_RUNTIME_VERSION = {0};", Application.unityVersion);
@@ -118,13 +260,18 @@ public static class XcodePostBuild
         config.AppendFormat("UNITY_IOS_EXPORT_PATH = {0};", pathToBuiltProject);
         config.AppendLine();
 
-        var configPath = Path.Combine(XcodeProjectRoot, ExportsConfigProjectPath);
-        FillDirectories(configPath);
-
-        File.WriteAllText(configPath, config.ToString());
+        var ExportsConfigProjectPath = Combine(XcodeProjectRoot, XcodeProjectName, "Unity", "Exports.xcconfig");
+        FillDirectories(ExportsConfigProjectPath);
+        File.WriteAllText(ExportsConfigProjectPath, config.ToString());
     }
 
-    private static void FillDirectories(string path)
+    static void CopyFile(string srcPath, string destPath)
+    {
+        FillDirectories(destPath);
+        File.Copy(srcPath, destPath, true);
+    }
+
+    static void FillDirectories(string path)
     {
         var root = new DirectoryInfo(Path.GetDirectoryName(path));
         var dirs = new List<DirectoryInfo>();
@@ -149,23 +296,28 @@ public static class XcodePostBuild
     /// It only add a reference entry into project.pbx file, without actually copy it.
     /// Xcode pre-build script will copy files into correct location.
     /// </summary>
-    private static void UpdateUnityProjectFiles(string pathToBuiltProject)
+    void UpdateUnityProjectFiles(string pathToBuiltProject)
     {
+        var pbxPath = Combine(
+            XcodeProjectRoot,
+            Path.ChangeExtension(XcodeProjectName, "xcodeproj"),
+            "project.pbxproj");
         var pbx = new PBXProject();
-        var pbxPath = Path.Combine(XcodeProjectRoot, PbxFilePath);
         pbx.ReadFromFile(pbxPath);
 
+        string classesPath = Combine(XcodeProjectName, "Unity", "Classes");
         ProcessUnityDirectory(
             pbx,
-            Path.Combine(pathToBuiltProject, "Classes"),
-            Path.Combine(XcodeProjectRoot, ClassesProjectPath),
-            ClassesProjectPath);
+            Combine(pathToBuiltProject, "Classes"),
+            Combine(XcodeProjectRoot, classesPath),
+            classesPath);
 
+        string librariesPath = Combine(XcodeProjectName, "Unity", "Libraries");
         ProcessUnityDirectory(
             pbx,
-            Path.Combine(pathToBuiltProject, "Libraries"),
-            Path.Combine(XcodeProjectRoot, LibrariesProjectPath),
-            LibrariesProjectPath);
+            Combine(pathToBuiltProject, "Libraries"),
+            Combine(XcodeProjectRoot, librariesPath),
+            librariesPath);
 
         pbx.WriteToFile(pbxPath);
     }
@@ -186,7 +338,7 @@ public static class XcodePostBuild
     /// <param name="projectPathPrefix">The prefix of project path in Swift Xcode
     /// project for Unity code files. E.g. "DempApp/Unity/Classes" for all files
     /// under Classes folder from Unity iOS build output.</param>
-    private static void ProcessUnityDirectory(PBXProject pbx, string src, string dest, string projectPathPrefix)
+    void ProcessUnityDirectory(PBXProject pbx, string src, string dest, string projectPathPrefix)
     {
         var targetGuid = pbx.TargetGuidByName(XcodeProjectName);
         if (string.IsNullOrEmpty(targetGuid))
@@ -220,12 +372,11 @@ public static class XcodePostBuild
 
         foreach (var f in extraFiles)
         {
-            var projPath = Path.Combine(projectPathPrefix, f);
+            var projPath = Combine(projectPathPrefix, f);
             if (pbx.ContainsFileByProjectPath(projPath))
             {
                 var guid = pbx.FindFileGuidByProjectPath(projPath);
                 pbx.RemoveFile(guid);
-
                 Debug.LogFormat("Removed file from pbx: '{0}'", projPath);
             }
         }
@@ -305,18 +456,18 @@ public static class XcodePostBuild
     {
         var unityVersion = ParseUnityVersionNumber(Application.unityVersion);
 
-        EditMainMM(Path.Combine(pathToBuiltProject, "Classes/main.mm"));
-        EditUnityAppControllerH(Path.Combine(pathToBuiltProject, "Classes/UnityAppController.h"));
-        EditUnityAppControllerMM(Path.Combine(pathToBuiltProject, "Classes/UnityAppController.mm"));
+        EditMainMM(Combine(pathToBuiltProject, "Classes/main.mm"));
+        EditUnityAppControllerH(Combine(pathToBuiltProject, "Classes/UnityAppController.h"));
+        EditUnityAppControllerMM(Combine(pathToBuiltProject, "Classes/UnityAppController.mm"));
 
         if (unityVersion == UNITY_VERSION_FOR_METAL_HELPER)
         {
-            EditMetalHelperMM(Path.Combine(pathToBuiltProject, "Classes/Unity/MetalHelper.mm"));
+            EditMetalHelperMM(Combine(pathToBuiltProject, "Classes/Unity/MetalHelper.mm"));
         }
 
         if (unityVersion >= MIN_UNITY_VERSION_FOR_SPLASH_SCREEN)
         {
-            EditSplashScreenMM(Path.Combine(pathToBuiltProject, "Classes/UI/SplashScreen.mm"));
+            EditSplashScreenMM(Combine(pathToBuiltProject, "Classes/UI/SplashScreen.mm"));
         }
     }
 
@@ -347,7 +498,7 @@ public static class XcodePostBuild
 
         EditCodeFile(path, line =>
         {
-            markerDetected |= line.Contains(TouchedMarker);
+            markerDetected |= line.Contains(TOUCH_MARKER);
             inScope |= line.Contains("inline UnityAppController");
 
             if (inScope && !markerDetected)
@@ -374,7 +525,7 @@ public static class XcodePostBuild
                     markerAdded = true;
                     return new string[]
                     {
-                        "// Modified by " + TouchedMarker,
+                        "// Modified by " + TOUCH_MARKER,
                         "// " + line,
                     };
                 }
@@ -397,7 +548,7 @@ public static class XcodePostBuild
         EditCodeFile(path, line =>
         {
             inScope |= line.Contains("- (void)startUnity:");
-            markerDetected |= inScope && line.Contains(TouchedMarker);
+            markerDetected |= inScope && line.Contains(TOUCH_MARKER);
 
             if (inScope && line.Trim() == "}")
             {
@@ -411,7 +562,7 @@ public static class XcodePostBuild
                 {
                     return new string[]
                     {
-                        "    // Modified by " + TouchedMarker,
+                        "    // Modified by " + TOUCH_MARKER,
                         "    // Post a notification so that Swift can load unity view once started.",
                         @"    [[NSNotificationCenter defaultCenter] postNotificationName: @""UnityReady"" object:self];",
                         "}",
@@ -432,14 +583,14 @@ public static class XcodePostBuild
 
         EditCodeFile(path, line =>
         {
-            markerDetected |= line.Contains(TouchedMarker);
+            markerDetected |= line.Contains(TOUCH_MARKER);
 
             if (!markerDetected && line.Trim() == "surface->stencilRB = [surface->device newTextureWithDescriptor: stencilTexDesc];")
             {
                 return new string[]
                 {
                     "",
-                    "    // Modified by " + TouchedMarker,
+                    "    // Modified by " + TOUCH_MARKER,
                     "    // Default stencilTexDesc.usage has flag 1. In runtime it will cause assertion failure:",
                     "    // validateRenderPassDescriptor:589: failed assertion `Texture at stencilAttachment has usage (0x01) which doesn't specify MTLTextureUsageRenderTarget (0x04)'",
                     "    // Adding MTLTextureUsageRenderTarget seems to fix this issue.",
@@ -466,7 +617,7 @@ public static class XcodePostBuild
         EditCodeFile(path, line =>
         {
             inScope |= line.Trim() == "void ShowSplashScreen(UIWindow* window)";
-            markerDetected |= line.Contains(TouchedMarker);
+            markerDetected |= line.Contains(TOUCH_MARKER);
 
             if (inScope && !markerDetected)
             {
@@ -484,7 +635,7 @@ public static class XcodePostBuild
                     inScope = false;
                 }
 
-                if (level > 0 && line.Trim().StartsWith("bool hasStoryboard"))
+                if (level > 0 && line.Trim().StartsWith("bool hasStoryboard", StringComparison.Ordinal))
                 {
                     return new string[]
                     {
@@ -498,7 +649,7 @@ public static class XcodePostBuild
                     markerAdded = true;
                     return new string[]
                     {
-                        "// Modified by " + TouchedMarker,
+                        "// Modified by " + TOUCH_MARKER,
                         line,
                     };
                 }
