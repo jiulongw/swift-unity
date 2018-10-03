@@ -80,13 +80,11 @@ public class XcodePostBuild : EditorWindow
 
     private static GUIStyle LINK_STYLE;
 
-#if UNITY_IOS
     [MenuItem("Tools/SwiftUnity")]
     public static void ShowConfiguration()
     {
         GetWindow(typeof(XcodePostBuild));
     }
-#endif
 
     void OnEnable()
     {
