@@ -443,6 +443,32 @@ In order for this to work, necessary changes to the target Xcode Swift project a
     }
 
     /// <summary>
+    /// Replaces the character component of Unity's version number with a period
+    /// and the decimal ASCII value of that character, to create an ersatz revision
+    /// number.
+    /// </summary>
+    /// <returns>A Version struct that can be used for range comparisons.</returns>
+    /// <param name="versionString">Unity's version string, formatted as [YEAR].[MINOR].[PATCH][CHARACTER][REVISION].</param>
+    private static Version ParseUnityVersionNumber(string versionString)
+    {
+        for (int i = versionString.Length - 1; i >= 0; --i)
+        {
+            var token = versionString[i];
+            if (char.IsLetter(token))
+            {
+                versionString = versionString
+                    .Remove(i)
+                    .Insert(i, string.Format(".{0}", (int)token));
+            }
+        }
+
+        return new Version(versionString);
+    }
+
+    static Version UNITY_VERSION_FOR_METAL_HELPER = ParseUnityVersionNumber("2017.1.1f1");
+    static Version MIN_UNITY_VERSION_FOR_SPLASH_SCREEN = new Version(2017, 3, 0);
+
+    /// <summary>
     /// Make necessary changes to Unity build output that enables it to be embedded into existing Xcode project.
     /// </summary>
     private static void PatchUnityNativeCode(string pathToBuiltProject)
