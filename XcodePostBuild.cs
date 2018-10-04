@@ -285,10 +285,8 @@ In order for this to work, necessary changes to the target Xcode Swift project a
     void UpdateUnityIOSExports(string pathToBuiltProject)
     {
         var config = new StringBuilder();
-        config.AppendFormat("UNITY_RUNTIME_VERSION = {0};", Application.unityVersion);
-        config.AppendLine();
-        config.AppendFormat("UNITY_IOS_EXPORT_PATH = {0};", pathToBuiltProject);
-        config.AppendLine();
+        config.AppendFormat("UNITY_RUNTIME_VERSION = {0};{1}", Application.unityVersion, Environment.NewLine);
+        config.AppendFormat("UNITY_IOS_EXPORT_PATH = {0};{1}", pathToBuiltProject, Environment.NewLine);
 
         var ExportsConfigProjectPath = PathExt.Combine(XcodeProjectRoot, XcodeProjectName, "Unity", "Exports.xcconfig");
         PathExt.FillDirectories(ExportsConfigProjectPath);
