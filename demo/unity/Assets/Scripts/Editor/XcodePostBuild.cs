@@ -288,14 +288,15 @@ In order for this to work, necessary changes to the target Xcode Swift project a
         config.AppendFormat("UNITY_RUNTIME_VERSION = {0};{1}", Application.unityVersion, Environment.NewLine);
         config.AppendFormat("UNITY_IOS_EXPORT_PATH = {0};{1}", pathToBuiltProject, Environment.NewLine);
 
-        var ExportsConfigProjectPath = PathExt.Combine(XcodeProjectRoot, XcodeProjectName, "Unity", "Exports.xcconfig");
-        PathExt.FillDirectories(ExportsConfigProjectPath);
+        var unityDir = PathExt.Combine(XcodeProjectRoot, XcodeProjectName, "Unity");
+        Directory.CreateDirectory(unityDir);
+        var ExportsConfigProjectPath = PathExt.Combine(unityDir, "Exports.xcconfig");
         File.WriteAllText(ExportsConfigProjectPath, config.ToString());
     }
 
     static void CopyFile(string srcPath, string destPath)
     {
-        PathExt.FillDirectories(destPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(destPath));
         File.Copy(srcPath, destPath, true);
     }
 
@@ -800,31 +801,6 @@ public static class PathExt
                 return Combine(partsA
                     .Concat(partsB)
                     .ToArray());
-            }
-        }
-    }
-
-    /// <summary>
-    /// Fills in directory structures as necessary to make sure that file operations on
-    /// `path` will succeed.
-    /// </summary>
-    /// <param name="path"></param>
-    public static void FillDirectories(string path)
-    {
-        var root = new DirectoryInfo(Path.GetDirectoryName(path));
-        var dirs = new List<DirectoryInfo>();
-        while (root != null)
-        {
-            dirs.Add(root);
-            root = root.Parent;
-        }
-
-        dirs.Reverse();
-        foreach (var dir in dirs)
-        {
-            if (!dir.Exists)
-            {
-                dir.Create();
             }
         }
     }
