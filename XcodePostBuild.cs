@@ -461,6 +461,12 @@ In order for this to work, necessary changes to the target Xcode Swift project a
         {
             EditSplashScreenMM(PathExt.Combine(pathToBuiltProject, "Classes/UI/SplashScreen.mm"));
         }
+        
+        // TODO: There are possibly more versions with this issue.
+        if (Application.unityVersion.StartsWith("2018."))
+        {
+            EditSplashScreenMM2018(Path.Combine(pathToBuiltProject, "Classes/UI/SplashScreen.mm"));
+        }
     }
 
     /// <summary>
@@ -589,6 +595,84 @@ In order for this to work, necessary changes to the target Xcode Swift project a
                     "    stencilTexDesc.usage |= MTLTextureUsageRenderTarget;",
                     line,
                 };
+            }
+
+            return new string[] { line };
+        });
+    }
+    
+    /// <summary>
+    /// Edit 'SplashScreen.mm': Unity introduces its own 'LaunchScreen.storyboard' since 2017.3.0f3.
+    /// Disable it here and use Swift project's launch screen instead.
+	/// This solves an issue where an identifier cannot be found for unitySplashStoryboard 
+    /// </summary>
+    private static void EditSplashScreenMM2018(string path)
+    {
+        var markerDetected = false;
+        var markerAdded = false;
+        var inScope = false;
+        var level = 0;
+
+        EditCodeFile(path, line =>
+        {
+            inScope |= line.Trim() == "void ShowSplashScreen(UIWindow* window)";
+            markerDetected |= line.Contains(TouchedMarker);
+
+            if (inScope && !markerDetected)
+            {
+                if (line.Trim() == "{")
+                {
+                    level++;
+                }
+                else if (line.Trim() == "}")
+                {
+                    level--;
+                }
+
+                if (line.Trim() == "}" && level == 0)
+                {
+                    inScope = false;
+                }
+
+                if (level > 1 && line.Trim().StartsWith("_controller = [storyboard instantiateViewControllerWithIdentifier"))
+                {
+                    return new string[]
+                    {
+                        "        //" + line,
+                        "        _controller = [storyboard instantiateInitialViewController];",
+                        "        window.rootViewController = _controller;"
+                    };
+                }
+
+                if (level > 0 && line.Trim().StartsWith("_controller = [[SplashScreenController alloc] init];"))
+                {
+                    return new string[]
+                    {
+                        "    {",
+                                 line,
+                        "        [_controller create: window];",
+                        "    }"
+                    };
+                }
+
+                if (level > 0 && line.Trim().StartsWith("[_controller create: window];"))
+                {
+                    return new string[]
+                    {
+                        "    //" + line
+                    };
+                }
+
+
+                if (!markerAdded)
+                {
+                    markerAdded = true;
+                    return new string[]
+                    {
+                        "// Modified by " + TouchedMarker,
+                        line,
+                    };
+                }
             }
 
             return new string[] { line };
