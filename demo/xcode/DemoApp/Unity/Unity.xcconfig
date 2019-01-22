@@ -3,14 +3,14 @@
 UNITY_SCRIPTING_BACKEND = il2cpp;
 GCC_PREFIX_HEADER = $(PRODUCT_NAME)/Unity/Classes/Prefix.pch;
 
-HEADER_SEARCH_PATHS = $(inherited) "$(PRODUCT_NAME)/Unity/Classes" "$(PRODUCT_NAME)/Unity/Classes/Unity" "$(PRODUCT_NAME)/Unity/Classes/Native" "$(PRODUCT_NAME)/Unity/Libraries" "$(PRODUCT_NAME)/Unity/Libraries/libil2cpp/include" ${PODS_HEADER_PATHS};
+HEADER_SEARCH_PATHS = $(inherited) "$(PRODUCT_NAME)/Unity" "$(PRODUCT_NAME)/Unity/Classes" "$(PRODUCT_NAME)/Unity/Classes/Unity" "$(PRODUCT_NAME)/Unity/Classes/Native" "$(PRODUCT_NAME)/Unity/Libraries" "$(PRODUCT_NAME)/Unity/Libraries/libil2cpp/include" ${PODS_HEADER_PATHS};
 
 LIBRARY_SEARCH_PATHS = $(inherited) "$(PRODUCT_NAME)/Unity/Libraries" "$(PRODUCT_NAME)/Unity/Libraries/libil2cpp/include" ${PODS_LIBRARY_PATHS};
 
 // If using .net 4.0 in Unity, append -DNET_4_0 to OTHER_CFLAGS
 OTHER_CFLAGS = $(inherited) -DINIT_SCRIPTING_BACKEND=1 -fno-strict-overflow -DRUNTIME_IL2CPP=1;
 
-OTHER_LDFLAGS = $(inherited) -weak-lSystem -weak_framework CoreMotion -weak_framework GameKit -weak_framework iAd -framework AVFoundation -framework AudioToolbox -framework CFNetwork -framework CoreGraphics -framework CoreLocation -framework CoreMedia -framework CoreVideo -framework Foundation -framework MediaPlayer -framework MediaToolbox -framework Metal -framework OpenAL -framework OpenGLES -framework QuartzCore -framework SystemConfiguration -framework UIKit -liconv.2 -liPhone-lib -lil2cpp ${PODS_LIBRARIES};
+OTHER_LDFLAGS = $(inherited) -weak-lSystem -weak_framework CoreMotion -weak_framework GameKit -weak_framework iAd -framework AVFoundation -framework AVKit -framework AudioToolbox -framework CFNetwork -framework CoreGraphics -framework CoreLocation -framework CoreMedia -framework CoreVideo -framework Foundation -framework MediaPlayer -framework MediaToolbox -framework Metal -framework OpenAL -framework OpenGLES -framework QuartzCore -framework SystemConfiguration -framework UIKit -liconv.2 -liPhone-lib -lil2cpp ${PODS_LIBRARIES};
 
 SWIFT_OBJC_BRIDGING_HEADER = $(PRODUCT_NAME)/Unity/Bridging-Header.h;
 SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
