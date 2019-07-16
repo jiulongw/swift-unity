@@ -67,7 +67,9 @@ public class XcodePostBuild : EditorWindow
     /// <summary>
     /// Path to the Xcode project.
     /// </summary>
-    private string XcodeProjectPath;
+    private string XcodeProjectPath = "../../../Example.xcodeproj";
+
+    private string XcodeTargetNames = "ExampleTargetNames";
 
     /// <summary>
     /// Path to the root directory of Xcode project.
@@ -153,6 +155,8 @@ public class XcodePostBuild : EditorWindow
         // select the .xcodeproj file and then figure them out from there.
         var xcodeProjectFile = PathExt.Abs2Rel(XcodeProjectPath);
         xcodeProjectFile = EditorGUILayout.TextField("Xcode Project File", xcodeProjectFile);
+
+        XcodeTargetNames = EditorGUILayout.TextField("Target Name", XcodeTargetNames);
 
         if (GUILayout.Button("Browse..."))
         {
@@ -312,8 +316,8 @@ In order for this to work, necessary changes to the target Xcode Swift project a
             Path.ChangeExtension(XcodeProjectName, "xcodeproj"),
             "project.pbxproj");
         var pbx = new PBXProject();
-        pbx.ReadFromFile(pbxPath);
 
+        pbx.ReadFromFile(pbxPath);
         string classesPath = PathExt.Combine(XcodeProjectName, "Unity", "Classes");
         ProcessUnityDirectory(
             pbx,
@@ -327,7 +331,7 @@ In order for this to work, necessary changes to the target Xcode Swift project a
             PathExt.Combine(pathToBuiltProject, "Libraries"),
             PathExt.Combine(XcodeProjectRoot, librariesPath),
             librariesPath);
-
+            
         pbx.WriteToFile(pbxPath);
     }
 
@@ -349,42 +353,47 @@ In order for this to work, necessary changes to the target Xcode Swift project a
     /// under Classes folder from Unity iOS build output.</param>
     void ProcessUnityDirectory(PBXProject pbx, string src, string dest, string projectPathPrefix)
     {
-        var targetGuid = pbx.TargetGuidByName(XcodeProjectName);
-        if (string.IsNullOrEmpty(targetGuid))
+        foreach (string targetName in XcodeTargetNames.Split(','))
         {
-            throw new Exception(string.Format("TargetGuid could not be found for '{0}'", XcodeProjectName));
-        }
+            //var targetGuid = pbx.TargetGuidByName(XcodeProjectName);
+            //var targetGuid = pbx.TargetGuidByName(XcodeTargetName);
+            var targetGuid = pbx.TargetGuidByName(targetName.Trim());
+            if (string.IsNullOrEmpty(targetGuid))
+            {
+                throw new Exception(string.Format("TargetGuid could not be found for '{0}'", XcodeProjectName));
+            }
 
-        // newFiles: array of file names in build output that do not exist in project.pbx manifest.
-        // extraFiles: array of file names in project.pbx manifest that do not exist in build output.
-        // Build output files that already exist in project.pbx manifest will be skipped to minimize
-        // changes to project.pbx file.
-        string[] newFiles, extraFiles;
-        CompareDirectories(src, dest, out newFiles, out extraFiles);
+            // newFiles: array of file names in build output that do not exist in project.pbx manifest.
+            // extraFiles: array of file names in project.pbx manifest that do not exist in build output.
+            // Build output files that already exist in project.pbx manifest will be skipped to minimize
+            // changes to project.pbx file.
+            string[] newFiles, extraFiles;
+            CompareDirectories(src, dest, out newFiles, out extraFiles);
 
-        foreach (var projPath in
-            from f in newFiles
-            where !f.EndsWith(".bak", StringComparison.OrdinalIgnoreCase)
-            let projPath = Path.Combine(projectPathPrefix, f)
-            where !pbx.ContainsFileByProjectPath(projPath)
-            select projPath)
-        {
-            var guid = pbx.AddFile(projPath, projPath);
-            pbx.AddFileToBuild(targetGuid, guid);
+            foreach (var projPath in
+                from f in newFiles
+                where !f.EndsWith(".bak", StringComparison.OrdinalIgnoreCase)
+                let projPath = Path.Combine(projectPathPrefix, f)
+                where !pbx.ContainsFileByProjectPath(projPath)
+                select projPath)
+            {
+                var guid = pbx.AddFile(projPath, projPath);
+                pbx.AddFileToBuild(targetGuid, guid);
 
-            Debug.LogFormat("Added file to pbx: '{0}'", projPath);
-        }
+                Debug.LogFormat("Added file to pbx: '{0}'", projPath);
+            }
 
-        foreach (var projPath in
-            from f in extraFiles
-            let projPath = PathExt.Combine(projectPathPrefix, f)
-            where pbx.ContainsFileByProjectPath(projPath)
-            select projPath)
-        {
-            var guid = pbx.FindFileGuidByProjectPath(projPath);
-            pbx.RemoveFile(guid);
+            foreach (var projPath in
+                from f in extraFiles
+                let projPath = PathExt.Combine(projectPathPrefix, f)
+                where pbx.ContainsFileByProjectPath(projPath)
+                select projPath)
+            {
+                var guid = pbx.FindFileGuidByProjectPath(projPath);
+                pbx.RemoveFile(guid);
 
-            Debug.LogFormat("Removed file from pbx: '{0}'", projPath);
+                Debug.LogFormat("Removed file from pbx: '{0}'", projPath);
+            }
         }
     }
 
@@ -449,8 +458,10 @@ In order for this to work, necessary changes to the target Xcode Swift project a
         var unityVersion = ParseUnityVersionNumber(Application.unityVersion);
 
         EditMainMM(PathExt.Combine(pathToBuiltProject, "Classes/main.mm"));
-        EditUnityAppControllerH(PathExt.Combine(pathToBuiltProject, "Classes/UnityAppController.h"));
+        //EditUnityAppControllerH(PathExt.Combine(pathToBuiltProject, "Classes/UnityAppController.h"));
         EditUnityAppControllerMM(PathExt.Combine(pathToBuiltProject, "Classes/UnityAppController.mm"));
+        EditUnityAppControllerViewHandlingMM(PathExt.Combine(pathToBuiltProject, "Classes/UI/UnityAppController+ViewHandling.mm"));
+        EditDeviceSettingsMM(PathExt.Combine(pathToBuiltProject, "Classes/Unity/DeviceSettings.mm"));
 
         if (unityVersion == UNITY_VERSION_FOR_METAL_HELPER)
         {
@@ -535,6 +546,7 @@ In order for this to work, necessary changes to the target Xcode Swift project a
     private static void EditUnityAppControllerMM(string path)
     {
         var inScope = false;
+        var inScope2 = false;
         var markerDetected = false;
 
         EditCodeFile(path, line =>
@@ -558,8 +570,21 @@ In order for this to work, necessary changes to the target Xcode Swift project a
                         "    // Post a notification so that Swift can load unity view once started.",
                         @"    [[NSNotificationCenter defaultCenter] postNotificationName: @""UnityReady"" object:self];",
                         "}",
+
                     };
                 }
+            }
+            inScope2 |= line.Contains("void UnityInitTrampoline()");
+
+            if (inScope2 && line.Contains("InitCrashHandling()"))
+            {
+                inScope2 = false;
+                return new string[]
+                {
+                    "    // Modefied by " + TOUCH_MARKER,
+                    "    // This method causes a runtime error when initilizing the Unity crash handler.",
+                    "    // " + line
+                };
             }
 
             return new string[] { line };
@@ -647,6 +672,78 @@ In order for this to work, necessary changes to the target Xcode Swift project a
                 }
             }
 
+            return new string[] { line };
+        });
+    }
+
+    private static void EditUnityAppControllerViewHandlingMM(string path)
+    {
+        var inScope = false;
+        var level = 0;
+
+        EditCodeFile(path, line =>
+        {
+            inScope |= line.Trim() == "- (void)createUI";
+
+            if (inScope)
+            {
+                if (line.Trim() == "{")
+                {
+                    level += 1;
+                }
+                else if (line.Trim() == "}")
+                {
+                    level -= 1;
+                }
+
+                if (line.Trim() == "}" && level == 0)
+                {
+                    inScope = false;
+                }
+
+                if (level > 0 && line.Trim().StartsWith("[UIView setAnimationsEnabled: NO];", StringComparison.Ordinal))
+                {
+                    return new string[]
+                    {
+                        "    // " + line
+                    };
+                }
+            }
+
+            return new string[] { line };
+        });
+    }
+
+    private static void EditDeviceSettingsMM(string path)
+    {
+        var inScope = false;
+        var level = 0;
+
+        EditCodeFile(path, line =>
+        {
+            inScope |= line.Trim() == "extern \"C\" int ParseDeviceGeneration(const char* model)";
+
+            if (inScope)
+            {
+                if (line.Trim() == "{")
+                {
+                    level += 1;
+                }
+                else if (line.Trim() == "}")
+                {
+                    level -= 1;
+                }
+
+                if (line.Trim() == "}" && level == 0)
+                {
+                    inScope = false;
+                    return new string[]
+                    {
+                        "    return deviceUnknown;",
+                        "}"
+                    };
+                }
+            }
             return new string[] { line };
         });
     }
