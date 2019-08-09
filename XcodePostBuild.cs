@@ -32,6 +32,7 @@ using System.Text;
 
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
 
@@ -67,9 +68,9 @@ public class XcodePostBuild : EditorWindow
     /// <summary>
     /// Path to the Xcode project.
     /// </summary>
-    private string XcodeProjectPath = "../../../Example.xcodeproj";
+    private string XcodeProjectPath = "../../../ios/EazelIos/EazelIOS.xcodeproj";
 
-    private string XcodeTargetNames = "ExampleTargetNames";
+    private string XcodeTargetNames = "EazelIOS - Debug, EazelIOS - Release";
 
     /// <summary>
     /// Path to the root directory of Xcode project.
@@ -114,7 +115,7 @@ public class XcodePostBuild : EditorWindow
         GetWindow<XcodePostBuild>();
     }
 
-    static string[] XCODEPROJ_FILTER = { "Xcode project files", "xcodeproj" };
+    static string[] XCODEPROJ_FILTER = { "Xcode project files", "*" };
 
     /// <summary>
     /// Builds the GUI for the custom editor window for this post process step. 
@@ -270,7 +271,36 @@ In order for this to work, necessary changes to the target Xcode Swift project a
             Application.OpenURL(PROJECT_URL);
         }
     }
-    
+    public static void IOSBuild()
+    {
+        BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+        {
+            scenes = new[]
+        {
+        "Assets/01_Scene/00_Background.unity",
+        "Assets/01_Scene/01_Logo.unity",
+        "Assets/01_Scene/02_Tutorial.unity",
+        "Assets/01_Scene/03_Main.unity"
+         },
+            locationPathName = "iOSBuild" + DateTime.Today.ToString("yyyyMMdd"),
+            target = BuildTarget.iOS,
+            options = BuildOptions.None
+        };
+
+        BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+        BuildSummary summary = report.summary;
+
+        if (summary.result == BuildResult.Succeeded)
+        {
+            Debug.Log("Build succeeded: " + summary.totalSize + " bytes");
+        }
+
+        if (summary.result == BuildResult.Failed)
+        {
+            Debug.Log("Build failed");
+        }
+    }
+
     [PostProcessBuild]
     public static void OnPostBuild(BuildTarget target, string pathToBuiltProject)
     {
@@ -353,48 +383,51 @@ In order for this to work, necessary changes to the target Xcode Swift project a
     /// under Classes folder from Unity iOS build output.</param>
     void ProcessUnityDirectory(PBXProject pbx, string src, string dest, string projectPathPrefix)
     {
-        foreach (string targetName in XcodeTargetNames.Split(','))
+
+        //var targetGuid = pbx.TargetGuidByName(XcodeProjectName);
+        //var targetGuid = pbx.TargetGuidByName(XcodeTargetName);
+
+
+        // newFiles: array of file names in build output that do not exist in project.pbx manifest.
+        // extraFiles: array of file names in project.pbx manifest that do not exist in build output.
+        // Build output files that already exist in project.pbx manifest will be skipped to minimize
+        // changes to project.pbx file.
+        string[] newFiles, extraFiles;
+        CompareDirectories(src, dest, out newFiles, out extraFiles);
+
+        foreach (var projPath in
+            from f in newFiles
+            where !f.EndsWith(".bak", StringComparison.OrdinalIgnoreCase)
+            let projPath = Path.Combine(projectPathPrefix, f)
+            where !pbx.ContainsFileByProjectPath(projPath)
+            select projPath)
         {
-            //var targetGuid = pbx.TargetGuidByName(XcodeProjectName);
-            //var targetGuid = pbx.TargetGuidByName(XcodeTargetName);
-            var targetGuid = pbx.TargetGuidByName(targetName.Trim());
-            if (string.IsNullOrEmpty(targetGuid))
+            foreach (string targetName in XcodeTargetNames.Split(','))
             {
-                throw new Exception(string.Format("TargetGuid could not be found for '{0}'", XcodeProjectName));
-            }
-
-            // newFiles: array of file names in build output that do not exist in project.pbx manifest.
-            // extraFiles: array of file names in project.pbx manifest that do not exist in build output.
-            // Build output files that already exist in project.pbx manifest will be skipped to minimize
-            // changes to project.pbx file.
-            string[] newFiles, extraFiles;
-            CompareDirectories(src, dest, out newFiles, out extraFiles);
-
-            foreach (var projPath in
-                from f in newFiles
-                where !f.EndsWith(".bak", StringComparison.OrdinalIgnoreCase)
-                let projPath = Path.Combine(projectPathPrefix, f)
-                where !pbx.ContainsFileByProjectPath(projPath)
-                select projPath)
-            {
+                var targetGuid = pbx.TargetGuidByName(targetName.Trim());
+                if (string.IsNullOrEmpty(targetGuid))
+                {
+                    throw new Exception(string.Format("TargetGuid could not be found for '{0}'", XcodeProjectName));
+                }
                 var guid = pbx.AddFile(projPath, projPath);
                 pbx.AddFileToBuild(targetGuid, guid);
-
-                Debug.LogFormat("Added file to pbx: '{0}'", projPath);
             }
 
-            foreach (var projPath in
-                from f in extraFiles
-                let projPath = PathExt.Combine(projectPathPrefix, f)
-                where pbx.ContainsFileByProjectPath(projPath)
-                select projPath)
-            {
-                var guid = pbx.FindFileGuidByProjectPath(projPath);
-                pbx.RemoveFile(guid);
-
-                Debug.LogFormat("Removed file from pbx: '{0}'", projPath);
-            }
+            Debug.LogFormat("Added file to pbx: '{0}'", projPath);
         }
+
+        foreach (var projPath in
+            from f in extraFiles
+            let projPath = PathExt.Combine(projectPathPrefix, f)
+            where pbx.ContainsFileByProjectPath(projPath)
+            select projPath)
+        {
+            var guid = pbx.FindFileGuidByProjectPath(projPath);
+            pbx.RemoveFile(guid);
+
+            Debug.LogFormat("Removed file from pbx: '{0}'", projPath);
+        }
+        
     }
 
     /// <summary>
